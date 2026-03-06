@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Eventbrite from wish</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="{% static 'style.css' %}" />
+</head>
+<body>
+	<div class="page-shell">
+		<div class="ambient ambient-left" aria-hidden="true"></div>
+		<div class="ambient ambient-right" aria-hidden="true"></div>
+
+		<header class="hero">
+			<p class="eyebrow">Event discovery</p>
+			<div class="hero-copy">
+				<h1>Welcome to Eventbrite from wish</h1>
+				<p>
+					A clean starting point for your event recommendation system, with a premium presentation and room for personalized discovery.
+				</p>
+			</div>
+		</header>
+
+		<main class="content">
+			<section class="event-browser" aria-labelledby="events-heading">
+				<div class="browser-top">
+					<div>
+						<p class="section-kicker">Browse</p>
+						<h2 id="events-heading">Events</h2>
+					</div>
+
+					<div class="tab-switcher" role="tablist" aria-label="Event views">
+						<button
+							id="tab-all"
+							class="tab-button is-active"
+							type="button"
+							role="tab"
+							aria-selected="true"
+							aria-controls="event-panel"
+							tabindex="0"
+							data-view="all"
+						>
+							All Events
+						</button>
+						<button
+							id="tab-for-you"
+							class="tab-button"
+							type="button"
+							role="tab"
+							aria-selected="false"
+							aria-controls="event-panel"
+							tabindex="-1"
+							data-view="forYou"
+						>
+							For You
+						</button>
+					</div>
+				</div>
+
+				<div class="panel-head">
+					<p class="panel-label" id="panel-label">All available events</p>
+					<p class="panel-caption" id="panel-caption">A simple card grid ready for your future catalog.</p>
+				</div>
+
+				<section
+					id="event-panel"
+					class="event-panel"
+					role="tabpanel"
+					aria-labelledby="tab-all"
+					aria-live="polite"
+				></section>
+			</section>
+		</main>
+	</div>
+
+	<script src="{% static 'script.js' %}"></script>
+</body>
+</html>
