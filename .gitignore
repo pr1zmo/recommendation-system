@@ -1,0 +1,5 @@
+__init__.py
+fractal*
+
+*.pycache
+*.egg-info
