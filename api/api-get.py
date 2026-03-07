@@ -1,30 +1,17 @@
-import json
-import requests
 import os
+import requests
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# The API endpoint URL
-API_KEY = os.getenv('EVENTBRITE_API_KEY')  # Make sure to set your API key in the environment variables
-api_url = f"https://www.eventbriteapi.com/v3/users/me/?token={API_KEY}"
+API_KEY = os.getenv("TICKETMASTER_KEY")
+API_URL = f"https://app.ticketmaster.com/discovery/v2/events.json?apikey={API_KEY}"
 
-print(api_url)
+print(API_URL)
 
-# Make the GET request
-response = requests.get(api_url)
+response = requests.get(API_URL)
+print(response.status_code)
 
-print(response)
-
-# Check the status code
-if response.status_code == 200:
-    # Parse the JSON response into a Python dictionary
-    data = response.json()
-
-    # Access and use the data
-    # print(f"Number of people in space: {data['number']}")
-    print(data)
-
-else:
-    # Handle the error
-    print(f"API request failed with status code: {response.status_code}")
+if response.ok:
+	print(json.loads(response.content))

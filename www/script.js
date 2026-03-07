@@ -4,6 +4,10 @@ const placeholderEvent = Object.freeze({
 	tags: ["#test1", "#test2", "#test3"]
 });
 
+Events = {
+	//
+}
+
 const views = {
 	all: {
 		tabId: "tab-all",
