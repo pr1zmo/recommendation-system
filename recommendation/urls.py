@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from recommendation.views import home
+from recommendation.views import home, data_json
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('data.json', data_json, name='data-json'),
     path('', home, name='home'),
 ]
