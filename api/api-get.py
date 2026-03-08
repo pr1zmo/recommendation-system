@@ -5,21 +5,6 @@ import random
 from dotenv import load_dotenv
 
 load_dotenv()
-
-'''
-import json
-data = {
-    "name": "sathiyajith",
-    "rollno": 56,
-    "cgpa": 8.6,
-    "phone": "9976770500"
-}
-
-json_str = json.dumps(data, indent=4)
-with open("sample.json", "w") as f:
-    f.write(json_str)
-'''
-
 API_KEY = os.getenv("TICKETMASTER_KEY")
 
 if not API_KEY:
