@@ -5,7 +5,7 @@ const placeholderEvent = Object.freeze({
 	tags: ["#test1", "#test2", "#test3"]
 });
 
-const JSON_FILE = "/static/data.json";
+const JSON_FILE = "/static/data_copy.json";
 
 async function readJson(filePath) {
 	try{
