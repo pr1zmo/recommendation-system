@@ -329,26 +329,65 @@ async function sendEventAction(eventId, action) {
 		body: JSON.stringify({ action })
 	});
 	appState.user = payload.user;
-	renderView(appState.activeView);
+	updateAuthUI();
+	updateActionButtonStates();
 	return payload.user;
+}
+
+function getActionPresentation(eventId, action) {
+	if (action === "like") {
+		const active = isActionActive(eventId, "likedEventIds");
+		return {
+			label: active ? "Liked" : "Like",
+			active,
+			disabled: !appState.user,
+			extraClass: "is-like"
+		};
+	}
+
+	if (action === "dislike") {
+		const active = isActionActive(eventId, "dislikedEventIds");
+		return {
+			label: active ? "Disliked" : "Dislike",
+			active,
+			disabled: !appState.user,
+			extraClass: "is-dislike"
+		};
+	}
+
+	const active = isActionActive(eventId, "attendedEventIds");
+	return {
+		label: active ? "Attended" : "Attend",
+		active,
+		disabled: !appState.user || active,
+		extraClass: "is-attend"
+	};
+}
+
+function updateActionButtonStates() {
+	document.querySelectorAll(".action-button[data-event-id][data-action]").forEach((button) => {
+		const eventId = button.dataset.eventId;
+		const action = button.dataset.action;
+		const presentation = getActionPresentation(eventId, action);
+
+		button.textContent = presentation.label;
+		button.disabled = presentation.disabled;
+		button.classList.toggle("is-active", presentation.active);
+	});
 }
 
 function buildActionButtons(eventData) {
 	const actions = createElement("div", "card-actions");
-	const isAuthenticated = Boolean(appState.user);
-	const liked = isActionActive(eventData.id, "likedEventIds");
-	const disliked = isActionActive(eventData.id, "dislikedEventIds");
-	const attended = isActionActive(eventData.id, "attendedEventIds");
-
-	const actionConfigs = [
-		{ action: "like", label: liked ? "Liked" : "Like", active: liked, disabled: !isAuthenticated, extraClass: "is-like" },
-		{ action: "dislike", label: disliked ? "Disliked" : "Dislike", active: disliked, disabled: !isAuthenticated, extraClass: "is-dislike" },
-		{ action: "attend", label: attended ? "Attended" : "Attend", active: attended, disabled: !isAuthenticated || attended, extraClass: "is-attend" }
-	];
+	const actionConfigs = ["like", "dislike", "attend"].map((action) => ({
+		action,
+		...getActionPresentation(eventData.id, action)
+	}));
 
 	actionConfigs.forEach((config) => {
 		const button = createElement("button", `action-button ${config.extraClass}`, config.label);
 		button.type = "button";
+		button.dataset.eventId = eventData.id;
+		button.dataset.action = config.action;
 		button.disabled = config.disabled;
 		button.classList.toggle("is-active", config.active);
 		button.addEventListener("click", async () => {
