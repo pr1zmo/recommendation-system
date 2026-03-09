@@ -16,10 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from recommendation.views import home, data_json
+from recommendation.views import bootstrap, data_json, event_action, home, login_view, logout_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/bootstrap', bootstrap, name='bootstrap'),
+    path('api/login', login_view, name='login'),
+    path('api/logout', logout_view, name='logout'),
+    path('api/events/<str:event_id>/action', event_action, name='event-action'),
     path('data.json', data_json, name='data-json'),
     path('', home, name='home'),
 ]

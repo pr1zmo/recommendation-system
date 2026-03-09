@@ -24,6 +24,40 @@
 					A clean starting point for your event recommendation system, with a premium presentation and room for personalized discovery.
 				</p>
 			</div>
+
+			<section class="auth-panel" aria-labelledby="auth-heading">
+				<div class="auth-copy">
+					<p class="section-kicker">Account</p>
+					<h2 id="auth-heading">Simple dev login</h2>
+					<p id="auth-message" class="auth-message">Log in to like, dislike, mark events attended, and track user-specific recommendations.</p>
+					<p class="auth-hint">Dev accounts: alice/alice123, mateo/mateo123, harper/harper123, sofia/sofia123</p>
+				</div>
+
+				<form id="login-form" class="login-form">
+					{% csrf_token %}
+					<label class="field">
+						<span>Username</span>
+						<input id="username-input" name="username" type="text" autocomplete="username" required />
+					</label>
+					<label class="field">
+						<span>Password</span>
+						<input id="password-input" name="password" type="password" autocomplete="current-password" required />
+					</label>
+					<button class="primary-button" type="submit">Log In</button>
+				</form>
+
+				<div id="user-summary" class="user-summary" hidden>
+					<div>
+						<p class="section-kicker">Signed in</p>
+						<h3 id="user-summary-name"></h3>
+						<p id="user-summary-meta" class="auth-message"></p>
+					</div>
+					<div class="summary-actions">
+						<p id="user-next-recommendation" class="auth-hint"></p>
+						<button id="logout-button" class="secondary-button" type="button">Log Out</button>
+					</div>
+				</div>
+			</section>
 		</header>
 
 		<main class="content">

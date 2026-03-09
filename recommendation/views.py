@@ -1,16 +1,118 @@
-from django.shortcuts import render
-from django.conf import settings
-from django.http import JsonResponse
 import json
+from django.conf import settings
+from django.http import HttpResponseBadRequest, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.http import require_GET, require_POST
 
+from recommendation.json_store import (
+    apply_event_action,
+    get_event_by_id,
+    get_user_by_id,
+    get_user_by_username,
+    load_events_payload,
+    load_users_payload,
+    public_user,
+    save_users_payload,
+)
+
+
+SESSION_USER_KEY = "json_user_id"
+
+
+@require_GET
 def home(request):
     return render(request, 'index.html')
 
 
+@require_GET
 def data_json(request):
-    data_path = settings.BASE_DIR / "data.json"
+    data_path = settings.BASE_DIR / "www" / "data3.json"
 
     with data_path.open("r", encoding="utf-8") as file:
         payload = json.load(file)
 
     return JsonResponse(payload)
+
+
+def _current_user(request, users_payload):
+    user_id = request.session.get(SESSION_USER_KEY)
+    if not user_id:
+        return None
+    return get_user_by_id(users_payload, user_id)
+
+
+def _parse_json_body(request):
+    try:
+        return json.loads(request.body.decode("utf-8") or "{}")
+    except json.JSONDecodeError:
+        raise ValueError("Invalid JSON body.")
+
+
+@require_GET
+def bootstrap(request):
+    users_payload = load_users_payload()
+    events_payload = load_events_payload()
+    user = _current_user(request, users_payload)
+
+    return JsonResponse(
+        {
+            "isAuthenticated": user is not None,
+            "user": public_user(user) if user else None,
+            "events": events_payload.get("events", []),
+        }
+    )
+
+
+@require_POST
+def login_view(request):
+    try:
+        body = _parse_json_body(request)
+    except ValueError as error:
+        return HttpResponseBadRequest(str(error))
+
+    username = str(body.get("username", "")).strip()
+    password = str(body.get("password", ""))
+
+    if not username or not password:
+        return JsonResponse({"error": "Username and password are required."}, status=400)
+
+    users_payload = load_users_payload()
+    user = get_user_by_username(users_payload, username)
+
+    if not user or str(user.get("password", "")) != password:
+        return JsonResponse({"error": "Invalid username or password."}, status=401)
+
+    request.session[SESSION_USER_KEY] = user.get("id")
+    return JsonResponse({"user": public_user(user)})
+
+
+@require_POST
+def logout_view(request):
+    request.session.pop(SESSION_USER_KEY, None)
+    return JsonResponse({"ok": True})
+
+
+@require_POST
+def event_action(request, event_id):
+    try:
+        body = _parse_json_body(request)
+    except ValueError as error:
+        return HttpResponseBadRequest(str(error))
+
+    action = str(body.get("action", "")).strip()
+    if action not in {"view", "like", "dislike", "attend"}:
+        return JsonResponse({"error": "Unsupported action."}, status=400)
+
+    users_payload = load_users_payload()
+    user = _current_user(request, users_payload)
+    if not user:
+        return JsonResponse({"error": "Authentication required."}, status=401)
+
+    events_payload = load_events_payload()
+    if not get_event_by_id(events_payload, event_id):
+        return JsonResponse({"error": "Event not found."}, status=404)
+
+    apply_event_action(user, str(event_id), action)
+    save_users_payload(users_payload)
+
+    return JsonResponse({"user": public_user(user)})

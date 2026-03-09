@@ -80,6 +80,9 @@ DATABASES = {
     }
 }
 
+# Keep session state out of the database for this JSON-backed dev setup.
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
