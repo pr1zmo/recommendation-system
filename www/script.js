@@ -15,9 +15,34 @@ const API = {
 	bootstrap: "/api/bootstrap",
 	login: "/api/login",
 	logout: "/api/logout",
+	preferences: "/api/user/preferences",
 	eventAction(eventId) {
 		return `/api/events/${encodeURIComponent(eventId)}/action`;
 	}
+};
+
+const EVENT_CATEGORIES = {
+	"Music": ["Pop", "Rock & Roll", "Hip-Hop", "Jazz", "Blues", "Classical", "Electronic", "Indie", "Metal", "R&B", "Reggae", "Country"],
+	"Business & Professional": ["Startup Pitch", "Leadership", "Sales", "Marketing", "Entrepreneurship", "Project Management", "Networking", "Career Development", "Finance", "Real Estate"],
+	"Food & Drink": ["Wine Tasting", "Craft Beer", "Coffee Culture", "Street Food", "Fine Dining", "Cooking Class", "Baking", "Vegan Cuisine", "BBQ", "World Cuisine"],
+	"Community & Culture": ["Local Heritage", "Cultural Exchange", "Volunteer Meetup", "Language Exchange", "Neighborhood Gathering", "Public Forum", "Community Art", "Social Impact"],
+	"Performing & Visual Arts": ["Theater", "Dance", "Opera", "Stand-up Comedy", "Photography", "Painting", "Sculpture", "Digital Art", "Street Art"],
+	"Film, Media & Entertainment": ["Independent Film", "Documentary", "Short Films", "Animation", "Podcast Live", "Creator Meetup", "Content Production", "Fan Convention"],
+	"Sports & Fitness": ["Football", "Basketball", "Running", "Cycling", "Yoga", "CrossFit", "Martial Arts", "Swimming", "Tennis", "Esports Fitness"],
+	"Health & Wellness": ["Mental Health", "Meditation", "Breathwork", "Nutrition", "Holistic Healing", "Sleep Optimization", "Stress Management", "Self-care", "Mindfulness"],
+	"Science & Technology": ["AI & Machine Learning", "Web Development", "Cybersecurity", "Data Science", "Robotics", "Cloud Computing", "Open Source", "Blockchain", "Biotech", "Space Tech"],
+	"Travel & Outdoor": ["Hiking", "Backpacking", "Camping", "Road Trips", "Adventure Travel", "Wildlife Tours", "Nature Photography", "Urban Exploration"],
+	"Charity & Causes": ["Fundraiser", "Environmental Action", "Animal Welfare", "Education Access", "Health Campaign", "Human Rights", "Disaster Relief", "Community Service"],
+	"Religion & Spirituality": ["Interfaith Dialogue", "Prayer Gathering", "Scripture Study", "Spiritual Retreat", "Gospel Night", "Meditative Worship", "Faith & Society"],
+	"Family & Education": ["Parenting", "Early Learning", "STEM for Kids", "Teen Development", "Homeschooling", "College Prep", "Scholarship Workshops", "Lifelong Learning"],
+	"Seasonal & Holiday": ["Christmas", "New Year", "Halloween", "Easter", "Valentine's Day", "Summer Festival", "Winter Market", "Spring Fair"],
+	"Government & Politics": ["Town Hall", "Policy Discussion", "Election Debate", "Civic Education", "Public Administration", "Advocacy", "Constitutional Rights"],
+	"Fashion & Beauty": ["Streetwear", "Haute Couture", "Makeup Artistry", "Skincare", "Hair Styling", "Sustainable Fashion", "Personal Styling", "Fragrance"],
+	"Home & Lifestyle": ["Interior Design", "Minimalism", "DIY Decor", "Smart Home", "Gardening", "Home Organization", "Pet-friendly Living", "Wellness at Home"],
+	"Auto, Boat & Air": ["Car Meet", "Motorcycles", "Classic Cars", "Boat Show", "Sailing", "Aviation Expo", "Drone Showcase", "EV Technology"],
+	"Hobbies & Special Interest": ["Board Games", "Tabletop RPG", "Collectibles", "Comics", "Photography Club", "Model Building", "DIY Electronics", "Writing Circle"],
+	"Other": ["Miscellaneous Meetup", "General Interest", "Pop-up Experience", "Experimental Format"],
+	"School Activities": ["Debate Club", "Science Fair", "Art Showcase", "Sports Day", "Music Recital", "Coding Club", "Student Council", "Academic Competition"]
 };
 
 const placeholderEvent = Object.freeze({
@@ -56,15 +81,29 @@ const panelCaption = document.querySelector("#panel-caption");
 const tabSwitcher = document.querySelector(".tab-switcher");
 const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
 const pageShell = document.querySelector(".page-shell");
+const navUserButton = document.querySelector("#nav-user-button");
+
+// Modals
+const loginModal = document.querySelector("#login-modal");
+const profileModal = document.querySelector("#profile-modal");
+const preferencesModal = document.querySelector("#preferences-modal");
+const modalOverlays = [loginModal, profileModal, preferencesModal];
+const dialogCloses = document.querySelectorAll(".dialog-close");
+
+// Logins & auth
 const loginForm = document.querySelector("#login-form");
 const usernameInput = document.querySelector("#username-input");
 const passwordInput = document.querySelector("#password-input");
-const userSummary = document.querySelector("#user-summary");
 const userSummaryName = document.querySelector("#user-summary-name");
 const userSummaryMeta = document.querySelector("#user-summary-meta");
 const userNextRecommendation = document.querySelector("#user-next-recommendation");
 const logoutButton = document.querySelector("#logout-button");
 const authMessage = document.querySelector("#auth-message");
+
+// Preferences
+const preferencesForm = document.querySelector("#preferences-form");
+const preferencesList = document.querySelector("#preferences-list");
+const skipPreferencesBtn = document.querySelector("#skip-preferences");
 
 let panelAnimation;
 let activeReadMoreButton = null;
@@ -269,17 +308,67 @@ function animatePanel() {
 	);
 }
 
+function openModal(modalEl) {
+	modalOverlays.forEach((m) => {
+		m.setAttribute("hidden", "");
+		m.setAttribute("aria-hidden", "true");
+	});
+	if (modalEl) {
+		modalEl.removeAttribute("hidden");
+		modalEl.setAttribute("aria-hidden", "false");
+		document.body.classList.add("dialog-open");
+	}
+}
+
+function closeAllModals() {
+	modalOverlays.forEach((m) => {
+		m.setAttribute("hidden", "");
+		m.setAttribute("aria-hidden", "true");
+	});
+	document.body.classList.remove("dialog-open");
+}
+
+function renderPreferencesModal() {
+	const allPreferences = [
+		...Object.keys(EVENT_CATEGORIES),
+		...Object.values(EVENT_CATEGORIES).flat()
+	];
+
+	const fragment = document.createDocumentFragment();
+
+	allPreferences.forEach((pref) => {
+		const label = createElement("label");
+		const checkbox = createElement("input");
+		checkbox.type = "checkbox";
+		checkbox.name = "segment";
+		checkbox.value = pref;
+
+		const span = createElement("span", "", pref);
+		label.append(checkbox, span);
+		fragment.append(label);
+	});
+
+	preferencesList.replaceChildren(fragment);
+}
+
+function checkPreferencesFlow() {
+	const user = appState.user;
+	if (user && (!user.preferences || !user.preferences.segments || user.preferences.segments.length === 0)) {
+		renderPreferencesModal();
+		openModal(preferencesModal);
+	}
+}
+
 function updateAuthUI() {
 	const user = appState.user;
 	if (!user) {
 		loginForm.hidden = false;
-		userSummary.hidden = true;
 		authMessage.textContent = "Log in to like, dislike, mark events attended, and track user-specific recommendations.";
+		navUserButton.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
 		return;
 	}
 
 	loginForm.hidden = true;
-	userSummary.hidden = false;
 	userSummaryName.textContent = `${user.name} (@${user.username})`;
 	userSummaryMeta.textContent = `${user.city || "Unknown city"}, ${user.countryCode || "Unknown country"} · ${user.history.likedEventIds.length} liked · ${user.history.attendedEventIds.length} attended`;
 
@@ -287,7 +376,10 @@ function updateAuthUI() {
 	userNextRecommendation.textContent = nextEvent
 		? `Next recommendation: ${nextEvent.title}`
 		: "Next recommendation: not set yet";
-		authMessage.textContent = "You are signed in. Event actions now save directly to users.json.";
+	authMessage.textContent = "You are signed in. Event actions now save directly to users.json.";
+
+	// Switch to a filled profile icon or active state when logged in
+	navUserButton.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>`;
 }
 
 function renderView(viewKey) {
@@ -482,7 +574,10 @@ loginForm.addEventListener("submit", async (event) => {
 		appState.user = payload.user;
 		passwordInput.value = "";
 		authMessage.textContent = `Logged in as ${payload.user.username}.`;
+
+		closeAllModals();
 		renderView(appState.activeView);
+		checkPreferencesFlow();
 	} catch (error) {
 		authMessage.textContent = error.message;
 	}
@@ -495,10 +590,60 @@ logoutButton.addEventListener("click", async () => {
 		usernameInput.value = "";
 		passwordInput.value = "";
 		authMessage.textContent = "You have been logged out.";
+		closeAllModals();
 		renderView(appState.activeView);
 	} catch (error) {
 		authMessage.textContent = error.message;
 	}
+});
+
+preferencesForm.addEventListener("submit", async (event) => {
+	event.preventDefault();
+	const checked = Array.from(preferencesForm.querySelectorAll('input[name="segment"]:checked')).map((el) => el.value);
+
+	try {
+		const payload = await requestJson(API.preferences, {
+			method: "POST",
+			body: JSON.stringify({ segments: checked })
+		});
+		appState.user = payload.user;
+		updateAuthUI();
+		closeAllModals();
+		renderView(appState.activeView);
+	} catch (error) {
+		console.error("Failed to save preferences:", error);
+	}
+});
+
+skipPreferencesBtn.addEventListener("click", () => {
+	closeAllModals();
+});
+
+navUserButton.addEventListener("click", () => {
+	if (appState.user) {
+		openModal(profileModal);
+	} else {
+		openModal(loginModal);
+	}
+});
+
+dialogCloses.forEach((btn) => {
+	btn.addEventListener("click", () => {
+		// Event dialog vs app modal closes
+		if (btn.closest(".modal-overlay")) {
+			closeAllModals();
+		} else {
+			closeEventDialog();
+		}
+	});
+});
+
+modalOverlays.forEach((overlay) => {
+	overlay.addEventListener("click", (event) => {
+		if (event.target === overlay) {
+			closeAllModals();
+		}
+	});
 });
 
 tabSwitcher.addEventListener("click", (event) => {

@@ -116,3 +116,27 @@ def event_action(request, event_id):
     save_users_payload(users_payload)
 
     return JsonResponse({"user": public_user(user)})
+
+
+@require_POST
+def update_preferences(request):
+    try:
+        body = _parse_json_body(request)
+    except ValueError as error:
+        return HttpResponseBadRequest(str(error))
+
+    segments = body.get("segments")
+    if not isinstance(segments, list):
+        return JsonResponse({"error": "Segments must be a list."}, status=400)
+
+    users_payload = load_users_payload()
+    user = _current_user(request, users_payload)
+    if not user:
+        return JsonResponse({"error": "Authentication required."}, status=401)
+
+    user.setdefault("preferences", {})
+    user["preferences"]["segments"] = [str(s).strip() for s in segments if str(s).strip()]
+    
+    save_users_payload(users_payload)
+
+    return JsonResponse({"user": public_user(user)})
