@@ -11,6 +11,7 @@ function createElement(tagName, className, textContent) {
 
 	return element;
 }
+
 const API = {
 	bootstrap: "/api/bootstrap",
 	login: "/api/login",
@@ -207,30 +208,9 @@ function eventMap() {
 	return new Map(appState.events.map((eventData) => [eventData.id, eventData]));
 }
 
-function resolveRecommendedEvents() {
-	if (!appState.user) {
-		return [];
-	}
-
-	const byId = eventMap();
-	const recommended = (appState.user.recommendedEventIds || [])
-		.map((eventId) => byId.get(String(eventId)))
-		.filter(Boolean);
-
-	if (recommended.length > 0) {
-		return recommended;
-	}
-
-	const preferredSegments = new Set(appState.user.preferences?.segments || []);
-	return shuffleArray(appState.events)
-		.filter((eventData) => preferredSegments.has(eventData.segment))
-		.slice(0, 6);
-}
-
 function buildViews() {
 	const randomized = shuffleArray(appState.events);
 	const allItems = randomized.slice(0, Math.min(24, randomized.length));
-	const forYouItems = appState.user ? resolveRecommendedEvents() : [];
 
 	return {
 		all: {
@@ -242,10 +222,8 @@ function buildViews() {
 		forYou: {
 			tabId: "tab-for-you",
 			label: "Recommended for you",
-			caption: appState.user
-				? `${forYouItems.length} user-linked recommendations loaded.`
-				: "Log in to see your user-specific recommendations.",
-			items: appState.user ? forYouItems : Array.from({ length: 4 }, () => placeholderEvent)
+			caption: "Loading recommendations...",
+			items: Array.from({ length: 4 }, () => placeholderEvent)
 		}
 	};
 }
@@ -379,7 +357,7 @@ function updateAuthUI() {
 	authMessage.textContent = "You are signed in. Event actions now save directly to users.json.";
 
 	// Switch to a filled profile icon or active state when logged in
-	navUserButton.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>`;
+	navUserButton.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
 }
 
 function renderView(viewKey) {
