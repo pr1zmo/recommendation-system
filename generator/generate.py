@@ -278,9 +278,9 @@ cc = [
 	"BR", "BG", "CA", "CL", "CN", "CO", "CR", "HR", "CY", "CZ", "DK", "DO",
 	"EC", "EE", "FO", "FI", "FR", "GE", "DE", "GH", "GI", "GB", "GR", "HK",
 	"HU", "IS", "IN", "IE", "IL", "IT", "JM", "JP", "KR", "LV", "LB", "LT",
-	"LU", "MY", "MT", "MX", "MC", "ME", "MA", "NL", "AN", "NZ", "ND", "NO",
-	"PE", "PL", "PT", "RO", "RU", "LC", "SA", "RS", "SG", "SK", "SI", "ZA",
-	"ES", "SE", "CH", "TW", "TH", "TT", "TR", "UA", "AE", "UY", "VE",
+	"LU", "MA", "MY", "MT", "MX", "MC", "ME", "MA", "NL", "AN", "NZ", "ND",
+	"NO", "PE", "PL", "PT", "RO", "RU", "LC", "SA", "RS", "SG", "SK", "SI",
+	"ZA", "ES", "SE", "CH", "TW", "TH", "TT", "TR", "UA", "AE", "UY", "VE",
 ]
 
 placeholder_images = [
