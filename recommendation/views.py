@@ -100,6 +100,8 @@ def event_action(request, event_id):
         return HttpResponseBadRequest(str(error))
 
     action = str(body.get("action", "")).strip()
+    duration = int(body.get("duration", 0)) if str(body.get("duration", 0)).isdigit() else 0
+
     if action not in {"view", "like", "dislike", "attend"}:
         return JsonResponse({"error": "Unsupported action."}, status=400)
 
@@ -112,7 +114,7 @@ def event_action(request, event_id):
     if not get_event_by_id(events_payload, event_id):
         return JsonResponse({"error": "Event not found."}, status=404)
 
-    apply_event_action(user, str(event_id), action)
+    apply_event_action(user, str(event_id), action, duration)
     save_users_payload(users_payload)
 
     return JsonResponse({"user": public_user(user)})

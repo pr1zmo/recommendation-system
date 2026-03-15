@@ -108,6 +108,10 @@ const skipPreferencesBtn = document.querySelector("#skip-preferences");
 
 let panelAnimation;
 let activeReadMoreButton = null;
+let currentEventViewDuration = {
+	eventId: null,
+	openTime: null
+};
 
 const detailOverlay = createElement("div", "event-overlay");
 detailOverlay.setAttribute("hidden", "");
@@ -229,7 +233,17 @@ function buildViews() {
 }
 
 function userHistorySet(key) {
-	return new Set(appState.user?.history?.[key] || []);
+	const historyItem = appState.user?.history?.[key];
+	if (!historyItem) return new Set();
+
+	if (Array.isArray(historyItem)) {
+		return new Set(historyItem);
+	}
+	// For viewedEventIds which is now a dictionary
+	if (typeof historyItem === 'object') {
+		return new Set(Object.keys(historyItem));
+	}
+	return new Set();
 }
 
 function isActionActive(eventId, key) {
@@ -384,6 +398,16 @@ function closeEventDialog() {
 		return;
 	}
 
+	if (appState.user && currentEventViewDuration.eventId && currentEventViewDuration.openTime) {
+		const duration = Date.now() - currentEventViewDuration.openTime;
+		sendEventAction(currentEventViewDuration.eventId, "view", duration).catch((error) => {
+			console.error(error);
+		});
+	}
+
+	currentEventViewDuration.eventId = null;
+	currentEventViewDuration.openTime = null;
+
 	detailOverlay.setAttribute("hidden", "");
 	detailOverlay.setAttribute("aria-hidden", "true");
 	document.body.classList.remove("dialog-open");
@@ -393,10 +417,10 @@ function closeEventDialog() {
 	}
 }
 
-async function sendEventAction(eventId, action) {
+async function sendEventAction(eventId, action, duration = 0) {
 	const payload = await requestJson(API.eventAction(eventId), {
 		method: "POST",
-		body: JSON.stringify({ action })
+		body: JSON.stringify({ action, duration })
 	});
 	appState.user = payload.user;
 	updateAuthUI();
@@ -491,9 +515,8 @@ function openEventDialog(eventData, triggerButton) {
 	detailClose.focus();
 
 	if (appState.user) {
-		sendEventAction(eventData.id, "view").catch((error) => {
-			console.error(error);
-		});
+		currentEventViewDuration.eventId = eventData.id;
+		currentEventViewDuration.openTime = Date.now();
 	}
 }
 
@@ -623,6 +646,30 @@ modalOverlays.forEach((overlay) => {
 		}
 	});
 });
+
+const themeToggleBtn = document.querySelector("#theme-toggle");
+if (themeToggleBtn) {
+	// Initialize theme from storage
+	const savedTheme = localStorage.getItem("app-theme") || "light";
+	document.documentElement.setAttribute("data-theme", savedTheme);
+
+	const moonSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="moon-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+	const sunSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sun-icon"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+
+	if (savedTheme === "dark") {
+		themeToggleBtn.innerHTML = sunSvg;
+	} else {
+		themeToggleBtn.innerHTML = moonSvg;
+	}
+
+	themeToggleBtn.addEventListener("click", () => {
+		const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+		const newTheme = currentTheme === "dark" ? "light" : "dark";
+		document.documentElement.setAttribute("data-theme", newTheme);
+		localStorage.setItem("app-theme", newTheme);
+		themeToggleBtn.innerHTML = newTheme === "dark" ? sunSvg : moonSvg;
+	});
+}
 
 tabSwitcher.addEventListener("click", (event) => {
 	const button = event.target.closest(".tab-button");

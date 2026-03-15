@@ -12,20 +12,28 @@
 	<link
 		href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
 		rel="stylesheet" />
-	<link rel="stylesheet" href="{% static 'style.css' %}" />
+	<link rel="stylesheet" href="{% static 'style.css' %}?v=2" />
 </head>
 
 <body>
 	<nav class="top-nav">
 		<div class="nav-content">
 			<div class="brand">Eventbrite from wish</div>
-			<button id="nav-user-button" class="icon-button" aria-label="User Account" type="button">
-				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-					stroke-linecap="round" stroke-linejoin="round">
-					<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-					<circle cx="12" cy="7" r="4"></circle>
-				</svg>
-			</button>
+			<div class="nav-actions">
+				<button id="theme-toggle" class="icon-button" aria-label="Toggle Dark Mode" type="button">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+						stroke-linecap="round" stroke-linejoin="round" class="moon-icon">
+						<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+					</svg>
+				</button>
+				<button id="nav-user-button" class="icon-button" aria-label="User Account" type="button">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+						stroke-linecap="round" stroke-linejoin="round">
+						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+						<circle cx="12" cy="7" r="4"></circle>
+					</svg>
+				</button>
+			</div>
 		</div>
 	</nav>
 
@@ -142,7 +150,7 @@
 		</main>
 	</div>
 
-	<script src="{% static 'script.js' %}"></script>
+	<script src="{% static 'script.js' %}?v=2"></script>
 </body>
 
 </html>

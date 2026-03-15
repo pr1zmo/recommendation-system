@@ -44,7 +44,6 @@ def mapRecommend(location):
             if (i['countryCode'] == location):
                 rec.append(i)
     return rec
-        
 
 def score(userTypes: list) -> float:
     if (userTypes == None):

@@ -35,7 +35,12 @@ def load_users_payload():
         user.setdefault("password", "")
         user.setdefault("preferences", {})
         history = user.setdefault("history", {})
-        history.setdefault("viewedEventIds", [])
+        
+        # Migrate viewedEventIds to dictionary if it's a list
+        viewed_events = history.setdefault("viewedEventIds", {})
+        if isinstance(viewed_events, list):
+            history["viewedEventIds"] = {str(event_id): 0 for event_id in viewed_events}
+
         history.setdefault("likedEventIds", [])
         history.setdefault("savedEventIds", [])
         history.setdefault("dismissedEventIds", [])
@@ -87,18 +92,28 @@ def _remove_value(items, value):
         items.remove(value)
 
 
-def apply_event_action(user, event_id, action):
+def apply_event_action(user, event_id, action, duration=0):
     history = user.setdefault("history", {})
-    viewed = history.setdefault("viewedEventIds", [])
+    viewed = history.setdefault("viewedEventIds", {})
+    if isinstance(viewed, list):
+        # Fallback migration if we somehow hit this with a legacy list
+        viewed = {str(e_id): 0 for e_id in viewed}
+        history["viewedEventIds"] = viewed
+
     liked = history.setdefault("likedEventIds", [])
     disliked = history.setdefault("dislikedEventIds", [])
     dismissed = history.setdefault("dismissedEventIds", [])
     attended = history.setdefault("attendedEventIds", [])
 
-    _add_unique(viewed, event_id)
-
     if action == "view":
+        # Cumulative additions
+        current_duration = viewed.get(event_id, 0)
+        viewed[event_id] = current_duration + duration
         return
+    else:
+        # For non-view actions, still log it in viewed with 0 additional time if it wasn't there
+        if event_id not in viewed:
+            viewed[event_id] = 0
 
     if action == "like":
         if event_id in liked:
@@ -136,7 +151,7 @@ def public_user(user):
         "city": user.get("city"),
         "preferences": user.get("preferences", {}),
         "history": {
-            "viewedEventIds": history.get("viewedEventIds", []),
+            "viewedEventIds": history.get("viewedEventIds", {}),
             "likedEventIds": history.get("likedEventIds", []),
             "savedEventIds": history.get("savedEventIds", []),
             "dismissedEventIds": history.get("dismissedEventIds", []),
