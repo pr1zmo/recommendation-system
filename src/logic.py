@@ -57,7 +57,11 @@ def getSegments(user, multiplier) -> dict:
 
     seg = {}
     for value in segments:
-        seg.update(value, multiplier)
+        if isinstance(value, dict):
+            for key, weight in value.items():
+                seg[key] = weight * multiplier
+        else:
+            seg[value] = multiplier
 
     return seg
 
