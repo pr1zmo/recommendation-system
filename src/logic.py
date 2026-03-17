@@ -1,3 +1,5 @@
+import json
+
 def similarity() -> float:
     return .011245
 
@@ -34,15 +36,28 @@ DISLIKED = -3
 EXPLICIT = 5
 DISLIKED = -5
 
-def getSegments(user, multiplier) -> dict:
-    with open("users.json", "r") as usr:
-        data = json.load(usr)
+USERS_FILE = "data/users.json"
 
-    segments = data["preferences"]["segments"]
+def getSegments(user, multiplier) -> dict:
+    print(user)
+    with open(USERS_FILE, "r") as usr:
+        data = json.load(usr)
+    
+    userData = None
+
+    for i in data['users']:
+        if (i['id'] == user):
+            userData = i
+
+    if (userData == None):
+        print(f"User {user} does not exist!\n")
+        return None
+
+    segments = userData["preferences"]["segments"]
 
     seg = {}
-    for key, value in segments.items():
-        seg[key] = value * multiplier
+    for value in segments:
+        seg.update(value, multiplier)
 
     return seg
 
@@ -58,7 +73,8 @@ def buildUserProfile(user) -> dict:
     You then normalize the weights:
     '''
     prof = {}
-    prof.append(getSegments(user, EXPLICIT))
+    prof.update(getSegments(user, EXPLICIT))
+    # prof.append(getSegments(user, EXPLICIT))
     print(prof)
 
 class Matrix:
@@ -73,4 +89,4 @@ def coldStart() -> list:
 def userEventMatrix(users, events):
     pass
 
-buildUserProfile()
+buildUserProfile("user-001")
