@@ -14,3 +14,63 @@ I must do this by taking the vectors of the specific events they have interacted
 (Ve), multiplying them by the interaction weight you defined above (W),
 and adding them all together alongside their explicit JSON preferences (P).
 '''
+
+'''
+| Action         | Effect |
+| -------------- | ------ |
+| liked event    | +3     |
+| attended event | +4     |
+| viewed event   | +1     |
+| disliked event | -3     |
+| explicit genre | +5     |
+| disliked genre | -5     |
+
+'''
+
+LIKED = 3
+ATTENDED = 4
+VIEWD = 1
+DISLIKED = -3
+EXPLICIT = 5
+DISLIKED = -5
+
+def getSegments(user, multiplier) -> dict:
+    with open("users.json", "r") as usr:
+        data = json.load(usr)
+
+    segments = data["preferences"]["segments"]
+
+    seg = {}
+    for key, value in segments.items():
+        seg[key] = value * multiplier
+
+    return seg
+
+def buildUserProfile(user) -> dict:
+    '''
+    build the user Profile based on the data in the users.json
+    Should return something like this:
+    {
+        "Theatre": 3,
+        "Comedy": 4,
+        "Music": 1,
+    }
+    You then normalize the weights:
+    '''
+    prof = {}
+    prof.append(getSegments(user, EXPLICIT))
+    print(prof)
+
+class Matrix:
+    pass
+
+def matrixMult(m1, m2):
+    pass
+
+def coldStart() -> list:
+    pass
+
+def userEventMatrix(users, events):
+    pass
+
+buildUserProfile()
