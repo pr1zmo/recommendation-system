@@ -34,22 +34,28 @@ ATTENDED = 4
 VIEWD = 1
 DISLIKED = -3
 EXPLICIT = 5
-DISLIKED = -5
+DISLIKED_GENRE = -5
 
+EVENTS_FILE = "data/data3.json"
 USERS_FILE = "data/users.json"
 
-def getSegments(user, multiplier) -> dict:
-    print(user)
+
+def _get_user_data(user):
+    """Helper to load and find user by ID, reducing redundancy."""
     with open(USERS_FILE, "r") as usr:
         data = json.load(usr)
     
-    userData = None
+    for entry in data["users"]:
+        if entry["id"] == user:
+            return entry
+    
+    return None
 
-    for i in data['users']:
-        if (i['id'] == user):
-            userData = i
 
-    if (userData == None):
+def getSegments(user, multiplier) -> dict:
+    userData = _get_user_data(user)
+    
+    if userData is None:
         print(f"User {user} does not exist!\n")
         return None
 
@@ -65,6 +71,44 @@ def getSegments(user, multiplier) -> dict:
 
     return seg
 
+def getEvents(user, multiplier, field: str) -> dict:
+    userData = _get_user_data(user)
+    
+    if userData is None:
+        return None
+    
+    likes = userData["history"].get(field, [])
+    
+    # Load events from data3.json
+    with open(EVENTS_FILE, "r") as events_file:
+        events_data = json.load(events_file)
+    
+    # Build a map of event_id -> event for fast lookup
+    event_by_id = {}
+    for event in events_data.get("events", []):
+        event_id = event.get("id")
+        if event_id:
+            event_by_id[event_id] = event
+    
+    # Extract segment and genre from liked events
+    profile = {}
+    for liked_id in likes:
+        event = event_by_id.get(liked_id)
+        if not event:
+            continue
+        
+        # # Add segment if present
+        # segment = event.get("segment")
+        # if segment:
+        #     profile[segment] = profile.get(segment, 0) + multiplier
+        
+        # Add genre if present
+        genre = event.get("genre")
+        if genre:
+            profile[genre] = profile.get(genre, 0) + multiplier
+    
+    return profile
+
 def buildUserProfile(user) -> dict:
     '''
     build the user Profile based on the data in the users.json
@@ -78,6 +122,9 @@ def buildUserProfile(user) -> dict:
     '''
     prof = {}
     prof.update(getSegments(user, EXPLICIT))
+    prof.update(getEvents(user, LIKED, "likedEventIds"))
+    prof.update(getEvents(user, DISLIKED, "dislikedEventIds"))
+    prof.update(getEvents(user, ATTENDED, "attendedEventIds"))
     # prof.append(getSegments(user, EXPLICIT))
     print(prof)
 
@@ -93,4 +140,4 @@ def coldStart() -> list:
 def userEventMatrix(users, events):
     pass
 
-buildUserProfile("user-001")
+buildUserProfile("user-005")

@@ -22,29 +22,29 @@ const API = {
 	}
 };
 
-const EVENT_CATEGORIES = {
-	"Music": ["Pop", "Rock & Roll", "Hip-Hop", "Jazz", "Blues", "Classical", "Electronic", "Indie", "Metal", "R&B", "Reggae", "Country"],
-	"Business & Professional": ["Startup Pitch", "Leadership", "Sales", "Marketing", "Entrepreneurship", "Project Management", "Networking", "Career Development", "Finance", "Real Estate"],
-	"Food & Drink": ["Wine Tasting", "Craft Beer", "Coffee Culture", "Street Food", "Fine Dining", "Cooking Class", "Baking", "Vegan Cuisine", "BBQ", "World Cuisine"],
-	"Community & Culture": ["Local Heritage", "Cultural Exchange", "Volunteer Meetup", "Language Exchange", "Neighborhood Gathering", "Public Forum", "Community Art", "Social Impact"],
-	"Performing & Visual Arts": ["Theater", "Dance", "Opera", "Stand-up Comedy", "Photography", "Painting", "Sculpture", "Digital Art", "Street Art"],
-	"Film, Media & Entertainment": ["Independent Film", "Documentary", "Short Films", "Animation", "Podcast Live", "Creator Meetup", "Content Production", "Fan Convention"],
-	"Sports & Fitness": ["Football", "Basketball", "Running", "Cycling", "Yoga", "CrossFit", "Martial Arts", "Swimming", "Tennis", "Esports Fitness"],
-	"Health & Wellness": ["Mental Health", "Meditation", "Breathwork", "Nutrition", "Holistic Healing", "Sleep Optimization", "Stress Management", "Self-care", "Mindfulness"],
-	"Science & Technology": ["AI & Machine Learning", "Web Development", "Cybersecurity", "Data Science", "Robotics", "Cloud Computing", "Open Source", "Blockchain", "Biotech", "Space Tech"],
-	"Travel & Outdoor": ["Hiking", "Backpacking", "Camping", "Road Trips", "Adventure Travel", "Wildlife Tours", "Nature Photography", "Urban Exploration"],
-	"Charity & Causes": ["Fundraiser", "Environmental Action", "Animal Welfare", "Education Access", "Health Campaign", "Human Rights", "Disaster Relief", "Community Service"],
-	"Religion & Spirituality": ["Interfaith Dialogue", "Prayer Gathering", "Scripture Study", "Spiritual Retreat", "Gospel Night", "Meditative Worship", "Faith & Society"],
-	"Family & Education": ["Parenting", "Early Learning", "STEM for Kids", "Teen Development", "Homeschooling", "College Prep", "Scholarship Workshops", "Lifelong Learning"],
-	"Seasonal & Holiday": ["Christmas", "New Year", "Halloween", "Easter", "Valentine's Day", "Summer Festival", "Winter Market", "Spring Fair"],
-	"Government & Politics": ["Town Hall", "Policy Discussion", "Election Debate", "Civic Education", "Public Administration", "Advocacy", "Constitutional Rights"],
-	"Fashion & Beauty": ["Streetwear", "Haute Couture", "Makeup Artistry", "Skincare", "Hair Styling", "Sustainable Fashion", "Personal Styling", "Fragrance"],
-	"Home & Lifestyle": ["Interior Design", "Minimalism", "DIY Decor", "Smart Home", "Gardening", "Home Organization", "Pet-friendly Living", "Wellness at Home"],
-	"Auto, Boat & Air": ["Car Meet", "Motorcycles", "Classic Cars", "Boat Show", "Sailing", "Aviation Expo", "Drone Showcase", "EV Technology"],
-	"Hobbies & Special Interest": ["Board Games", "Tabletop RPG", "Collectibles", "Comics", "Photography Club", "Model Building", "DIY Electronics", "Writing Circle"],
-	"Other": ["Miscellaneous Meetup", "General Interest", "Pop-up Experience", "Experimental Format"],
-	"School Activities": ["Debate Club", "Science Fair", "Art Showcase", "Sports Day", "Music Recital", "Coding Club", "Student Council", "Academic Competition"]
-};
+const EVENT_CATEGORIES = [
+	"Pop", "Rock & Roll", "Hip-Hop", "Jazz", "Blues", "Classical", "Electronic", "Indie", "Metal", "R&B", "Reggae", "Country",
+	"Startup Pitch", "Leadership", "Sales", "Marketing", "Entrepreneurship", "Project Management", "Networking", "Career Development", "Finance", "Real Estate",
+	"Wine Tasting", "Craft Beer", "Coffee Culture", "Street Food", "Fine Dining", "Cooking Class", "Baking", "Vegan Cuisine", "BBQ", "World Cuisine",
+	"Local Heritage", "Cultural Exchange", "Volunteer Meetup", "Language Exchange", "Neighborhood Gathering", "Public Forum", "Community Art", "Social Impact",
+	"Theater", "Dance", "Opera", "Stand-up Comedy", "Photography", "Painting", "Sculpture", "Digital Art", "Street Art",
+	"Independent Film", "Documentary", "Short Films", "Animation", "Podcast Live", "Creator Meetup", "Content Production", "Fan Convention",
+	"Football", "Basketball", "Running", "Cycling", "Yoga", "CrossFit", "Martial Arts", "Swimming", "Tennis", "Esports Fitness",
+	"Mental Health", "Meditation", "Breathwork", "Nutrition", "Holistic Healing", "Sleep Optimization", "Stress Management", "Self-care", "Mindfulness",
+	"AI & Machine Learning", "Web Development", "Cybersecurity", "Data Science", "Robotics", "Cloud Computing", "Open Source", "Blockchain", "Biotech", "Space Tech",
+	"Hiking", "Backpacking", "Camping", "Road Trips", "Adventure Travel", "Wildlife Tours", "Nature Photography", "Urban Exploration",
+	"Fundraiser", "Environmental Action", "Animal Welfare", "Education Access", "Health Campaign", "Human Rights", "Disaster Relief", "Community Service",
+	"Interfaith Dialogue", "Prayer Gathering", "Scripture Study", "Spiritual Retreat", "Gospel Night", "Meditative Worship", "Faith & Society",
+	"Parenting", "Early Learning", "STEM for Kids", "Teen Development", "Homeschooling", "College Prep", "Scholarship Workshops", "Lifelong Learning",
+	"Christmas", "New Year", "Halloween", "Easter", "Valentine's Day", "Summer Festival", "Winter Market", "Spring Fair",
+	"Town Hall", "Policy Discussion", "Election Debate", "Civic Education", "Public Administration", "Advocacy", "Constitutional Rights",
+	"Streetwear", "Haute Couture", "Makeup Artistry", "Skincare", "Hair Styling", "Sustainable Fashion", "Personal Styling", "Fragrance",
+	"Interior Design", "Minimalism", "DIY Decor", "Smart Home", "Gardening", "Home Organization", "Pet-friendly Living", "Wellness at Home",
+	"Car Meet", "Motorcycles", "Classic Cars", "Boat Show", "Sailing", "Aviation Expo", "Drone Showcase", "EV Technology",
+	"Board Games", "Tabletop RPG", "Collectibles", "Comics", "Photography Club", "Model Building", "DIY Electronics", "Writing Circle",
+	"Miscellaneous Meetup", "General Interest", "Pop-up Experience", "Experimental Format",
+	"Debate Club", "Science Fair", "Art Showcase", "Sports Day", "Music Recital", "Coding Club", "Student Council", "Academic Competition"
+];
 
 const placeholderEvent = Object.freeze({
 	id: "placeholder",
