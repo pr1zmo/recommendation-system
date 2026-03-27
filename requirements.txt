@@ -2,3 +2,4 @@ requests==2.32.5
 django==6.0.3
 dotenv==0.9.9
 beautifulsoup4==4.14.3
+scikit-learn==1.8.0

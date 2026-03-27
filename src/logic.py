@@ -1,4 +1,6 @@
 import json
+import math
+from sklearn.preprocessing import normalize
 from generator.generate import types, category, sub_category
 
 def similarity() -> float:
@@ -120,6 +122,8 @@ def buildUserProfile(user) -> dict:
     prof.update(getEvents(user, LIKED, "likedEventIds"))
     prof.update(getEvents(user, DISLIKED, "dislikedEventIds"))
     prof.update(getEvents(user, ATTENDED, "attendedEventIds"))
+
+    return prof
     # prof.append(getSegments(user, EXPLICIT))
 
 class Matrix:
@@ -134,7 +138,7 @@ def coldStart() -> list:
 def userEventMatrix(users, events):
     pass
 
-def normalize(item: str) -> str:
+def normalize_word(item: str) -> str:
     res = ''.join([i for i in item if i.isalpha() or i.isspace() or i == '&'])
     return res.lower()
 
@@ -158,7 +162,7 @@ def getEventVocabulary() -> dict:
     for subcats in sub_category.values():
         for item in subcats:
             if item not in seen:
-                seen.append(normalize(item))
+                seen.append(normalize_word(item))
 
     # Build indexed vocabulary dict
     vocabulary = {}
@@ -167,8 +171,28 @@ def getEventVocabulary() -> dict:
 
     return vocabulary
 
+def getVectorList(vocabulary: dict, userProfile: dict) -> list:
+    res = []
+    for key, value in vocabulary.items():
+        size = len(res)
+        for u_key, u_value in userProfile.items():
+            if u_key == key:
+                res.append(max(0, u_value))
+        if (size == len(res)):
+            res.append(0)
+    return res
+
+def l2_normalize(vector: list) -> list:
+    magnitude = sum(x ** 2 for x in vector) ** 0.5
+    if magnitude == 0:
+        return vector
+    return [x / magnitude for x in vector]
+
 def buildVectors(user):
     vocabulary = getEventVocabulary()
-    print(vocabulary)
+    userProfile = buildUserProfile(user)
+    vectorList = getVectorList(vocabulary, userProfile)
+    normalized = l2_normalize(vectorList)
+    print(normalized)
 
 buildVectors("user-005")
