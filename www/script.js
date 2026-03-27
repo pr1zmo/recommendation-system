@@ -321,10 +321,7 @@ function closeAllModals() {
 }
 
 function renderPreferencesModal() {
-	const allPreferences = [
-		...Object.keys(EVENT_CATEGORIES),
-		...Object.values(EVENT_CATEGORIES).flat()
-	];
+	const allPreferences = [...EVENT_CATEGORIES];
 
 	const fragment = document.createDocumentFragment();
 

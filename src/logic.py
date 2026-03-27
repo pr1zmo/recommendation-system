@@ -1,4 +1,5 @@
 import json
+from generator.generate import types, category, sub_category
 
 def similarity() -> float:
     return .011245
@@ -96,13 +97,7 @@ def getEvents(user, multiplier, field: str) -> dict:
         event = event_by_id.get(liked_id)
         if not event:
             continue
-        
-        # # Add segment if present
-        # segment = event.get("segment")
-        # if segment:
-        #     profile[segment] = profile.get(segment, 0) + multiplier
-        
-        # Add genre if present
+
         genre = event.get("genre")
         if genre:
             profile[genre] = profile.get(genre, 0) + multiplier
@@ -126,7 +121,6 @@ def buildUserProfile(user) -> dict:
     prof.update(getEvents(user, DISLIKED, "dislikedEventIds"))
     prof.update(getEvents(user, ATTENDED, "attendedEventIds"))
     # prof.append(getSegments(user, EXPLICIT))
-    print(prof)
 
 class Matrix:
     pass
@@ -140,4 +134,41 @@ def coldStart() -> list:
 def userEventMatrix(users, events):
     pass
 
-buildUserProfile("user-005")
+def normalize(item: str) -> str:
+    res = ''.join([i for i in item if i.isalpha()])
+    return res.lower()
+
+def getEventVocabulary() -> dict:
+    seen = []
+
+    # 1. Collect genres from the events file
+    with open(EVENTS_FILE, "r") as f:
+        eventsData = json.load(f)
+        for event in eventsData["events"]:
+            genre = event.get("genre")
+            if genre and genre not in seen:
+                seen.append(genre)
+
+    # 2. Add event type values (Conference, Seminar, etc.)
+    for value in types.values():
+        if value not in seen:
+            seen.append(value)
+
+    # 3. Add sub-category values (Pop, Rock & Roll, etc.) — skip the main category keys
+    for subcats in sub_category.values():
+        for item in subcats:
+            if item not in seen:
+                seen.append(normalize(item))
+
+    # Build indexed vocabulary dict
+    vocabulary = {}
+    for index, genre in enumerate(seen):
+        vocabulary[genre] = index
+
+    return vocabulary
+
+def buildVectors(user):
+    vocabulary = getEventVocabulary()
+    print(vocabulary)
+
+buildVectors("user-005")
