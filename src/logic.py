@@ -135,7 +135,7 @@ def userEventMatrix(users, events):
     pass
 
 def normalize(item: str) -> str:
-    res = ''.join([i for i in item if i.isalpha()])
+    res = ''.join([i for i in item if i.isalpha() or i.isspace() or i == '&'])
     return res.lower()
 
 def getEventVocabulary() -> dict:
