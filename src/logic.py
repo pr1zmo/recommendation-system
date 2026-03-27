@@ -172,15 +172,7 @@ def getEventVocabulary() -> dict:
     return vocabulary
 
 def getVectorList(vocabulary: dict, userProfile: dict) -> list:
-    res = []
-    for key, value in vocabulary.items():
-        size = len(res)
-        for u_key, u_value in userProfile.items():
-            if u_key == key:
-                res.append(max(0, u_value))
-        if (size == len(res)):
-            res.append(0)
-    return res
+    return [max(0, userProfile.get(key, 0)) for key in vocabulary]
 
 def l2_normalize(vector: list) -> list:
     magnitude = sum(x ** 2 for x in vector) ** 0.5
