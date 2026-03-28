@@ -1,7 +1,10 @@
 import json
 import math
+from pathlib import Path
 from sklearn.preprocessing import normalize
 from generator.generate import types, category, sub_category
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 def similarity() -> float:
     return .011245
@@ -39,8 +42,8 @@ DISLIKED = -3
 EXPLICIT = 5
 DISLIKED_GENRE = -5
 
-EVENTS_FILE = "data/data3.json"
-USERS_FILE = "data/users.json"
+EVENTS_FILE = str(_PROJECT_ROOT / "data" / "data3.json")
+USERS_FILE = str(_PROJECT_ROOT / "data" / "users.json")
 
 
 def _get_user_data(user):
@@ -211,20 +214,22 @@ def scoreEvent(event, user_vector, vocabulary):
     return score
 
 
-def recommend(user, vocabulary):
-    events_scores = {}
+def recommend(user, vocabulary, events_data=None):
+    """Return the top-20 event IDs with their scores.
+    If events_data is provided (list of event dicts), use it directly;
+    otherwise load from EVENTS_FILE.
+    """
+    if events_data is None:
+        with open(EVENTS_FILE, "r") as f:
+            events_data = json.load(f).get("events", [])
 
+    events_scores = {}
     userVector = buildVectors(user)
 
-    with open(EVENTS_FILE, "r") as f:
-        data = json.load(f)
-
-        for event in data["events"]:
-            score = scoreEvent(event, userVector, vocabulary)
-            events_scores[event["id"]] = score
+    for event in events_data:
+        score = scoreEvent(event, userVector, vocabulary)
+        events_scores[event["id"]] = score
 
     sorted_items = sorted(events_scores.items(), key=lambda x: x[1], reverse=True)
 
     return dict(sorted_items[:20])
-
-print(recommend("user-005", getEventVocabulary()))

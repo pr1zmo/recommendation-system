@@ -17,6 +17,7 @@ const API = {
 	login: "/api/login",
 	logout: "/api/logout",
 	preferences: "/api/user/preferences",
+	recommendations: "/api/recommendations",
 	eventAction(eventId) {
 		return `/api/events/${encodeURIComponent(eventId)}/action`;
 	}
@@ -371,7 +372,92 @@ function updateAuthUI() {
 	navUserButton.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
 }
 
+function createSkeletonCard() {
+	const card = createElement("article", "skeleton-card");
+	const img = createElement("div", "skeleton-shimmer skeleton-image");
+	const body = createElement("div", "skeleton-body");
+	body.append(
+		createElement("div", "skeleton-shimmer skeleton-title"),
+		createElement("div", "skeleton-shimmer skeleton-text"),
+		createElement("div", "skeleton-shimmer skeleton-text-short")
+	);
+	const tags = createElement("div", "skeleton-tags");
+	tags.append(
+		createElement("div", "skeleton-shimmer skeleton-tag"),
+		createElement("div", "skeleton-shimmer skeleton-tag")
+	);
+	card.append(img, body, tags);
+	return card;
+}
+
+function renderSkeletons(count = 6) {
+	const fragment = document.createDocumentFragment();
+	for (let i = 0; i < count; i++) {
+		fragment.append(createSkeletonCard());
+	}
+	panel.replaceChildren(fragment);
+}
+
+function renderLoginNudge() {
+	const nudge = createElement("div", "login-nudge");
+	nudge.append(
+		createElement("p", "", "Log in to see personalized recommendations."),
+		(() => {
+			const btn = createElement("button", "primary-button", "Log In");
+			btn.type = "button";
+			btn.addEventListener("click", () => openModal(loginModal));
+			return btn;
+		})()
+	);
+	panel.replaceChildren(nudge);
+}
+
+async function loadRecommendations() {
+	panelLabel.textContent = "Recommended for you";
+	panelCaption.textContent = "Finding events you'll love...";
+	setActiveTab("forYou");
+	panel.setAttribute("aria-labelledby", "tab-for-you");
+	appState.activeView = "forYou";
+
+	if (!appState.user) {
+		renderLoginNudge();
+		panelCaption.textContent = "Sign in for personalized picks.";
+		animatePanel();
+		return;
+	}
+
+	renderSkeletons(6);
+	animatePanel();
+
+	try {
+		// Show skeletons for at least 800ms so the shimmer effect is visible
+		const [payload] = await Promise.all([
+			requestJson(API.recommendations, { method: "GET", headers: {} }),
+			new Promise((r) => setTimeout(r, 800))
+		]);
+		appState.user = payload.user;
+
+		const events = (payload.events || []).map(normalizeEvent);
+		const fragment = document.createDocumentFragment();
+		events.forEach((eventData) => fragment.append(createCard(eventData)));
+
+		panelCaption.textContent = `${events.length} events recommended for you.`;
+		panel.replaceChildren(fragment);
+		animatePanel();
+		updateAuthUI();
+	} catch (error) {
+		console.error(error);
+		panelCaption.textContent = "Could not load recommendations.";
+		panel.replaceChildren(createElement("p", "auth-message", error.message));
+	}
+}
+
 function renderView(viewKey) {
+	if (viewKey === "forYou") {
+		loadRecommendations();
+		return;
+	}
+
 	views = buildViews();
 	const view = views[viewKey];
 	const fragment = document.createDocumentFragment();

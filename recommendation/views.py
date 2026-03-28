@@ -1,8 +1,16 @@
 import json
+import sys
+from pathlib import Path
+
 from django.conf import settings
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
+
+# Make src/ importable so we can call logic.recommend()
+_SRC_DIR = str(Path(settings.BASE_DIR) / "src")
+if _SRC_DIR not in sys.path:
+    sys.path.insert(0, _SRC_DIR)
 
 from recommendation.json_store import (
     apply_event_action,
@@ -142,3 +150,35 @@ def update_preferences(request):
     save_users_payload(users_payload)
 
     return JsonResponse({"user": public_user(user)})
+
+
+@require_GET
+def recommend_view(request):
+    from logic import recommend, getEventVocabulary
+
+    users_payload = load_users_payload()
+    user = _current_user(request, users_payload)
+    if not user:
+        return JsonResponse({"error": "Authentication required."}, status=401)
+
+    events_payload = load_events_payload()
+    events_list = events_payload.get("events", [])
+    vocabulary = getEventVocabulary()
+
+    scored = recommend(user["id"], vocabulary, events_data=events_list)
+
+    # Build a lookup of event id -> event dict
+    event_by_id = {str(e.get("id")): e for e in events_list}
+
+    recommended_events = []
+    for event_id in scored:
+        event = event_by_id.get(str(event_id))
+        if event:
+            recommended_events.append(event)
+
+    # Persist on the user object
+    user["recommendedEventIds"] = list(scored.keys())
+    user["nextRecommendation"] = user["recommendedEventIds"][0] if user["recommendedEventIds"] else None
+    save_users_payload(users_payload)
+
+    return JsonResponse({"events": recommended_events, "user": public_user(user)})

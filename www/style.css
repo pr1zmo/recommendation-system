@@ -785,6 +785,115 @@ select {
 	}
 }
 
+/* ── Skeleton loader ────────────────────────────────────── */
+.skeleton-card {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	min-height: 320px;
+	padding: 18px;
+	border: 1px solid var(--line);
+	border-radius: var(--radius-lg);
+	background: linear-gradient(180deg, var(--surface-strong) 0%, var(--surface) 100%);
+	box-shadow: 0 14px 28px rgba(24, 35, 45, 0.07);
+	overflow: hidden;
+}
+
+.skeleton-shimmer {
+	position: relative;
+	overflow: hidden;
+	background: var(--line);
+	border-radius: var(--radius-md);
+}
+
+.skeleton-shimmer::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgba(255, 255, 255, 0.18) 40%,
+		rgba(255, 255, 255, 0.26) 50%,
+		rgba(255, 255, 255, 0.18) 60%,
+		transparent 100%
+	);
+	animation: shimmer 1.6s ease-in-out infinite;
+}
+
+[data-theme="dark"] .skeleton-shimmer::after {
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgba(255, 255, 255, 0.06) 40%,
+		rgba(255, 255, 255, 0.1) 50%,
+		rgba(255, 255, 255, 0.06) 60%,
+		transparent 100%
+	);
+}
+
+.skeleton-image {
+	aspect-ratio: 16 / 10;
+	width: 100%;
+}
+
+.skeleton-body {
+	display: grid;
+	gap: 12px;
+}
+
+.skeleton-title {
+	height: 20px;
+	width: 65%;
+	border-radius: 10px;
+}
+
+.skeleton-text {
+	height: 14px;
+	width: 90%;
+	border-radius: 8px;
+}
+
+.skeleton-text-short {
+	height: 14px;
+	width: 55%;
+	border-radius: 8px;
+}
+
+.skeleton-tags {
+	display: flex;
+	gap: 10px;
+	margin-top: auto;
+}
+
+.skeleton-tag {
+	height: 32px;
+	width: 72px;
+	border-radius: 999px;
+}
+
+@keyframes shimmer {
+	from { transform: translateX(-100%); }
+	to   { transform: translateX(100%); }
+}
+
+/* ── "Log in" nudge for For You tab ────────────────────── */
+.login-nudge {
+	grid-column: 1 / -1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 14px;
+	padding: 48px 24px;
+	border: 1px dashed var(--line);
+	border-radius: var(--radius-lg);
+	color: var(--muted);
+	text-align: center;
+}
+
+.login-nudge p { margin: 0; font-size: 1.05rem; line-height: 1.6; }
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;
