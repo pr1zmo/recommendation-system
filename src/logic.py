@@ -171,8 +171,8 @@ def getEventVocabulary() -> dict:
 
     return vocabulary
 
-def getVectorList(vocabulary: dict, userProfile: dict) -> list:
-    return [max(0, userProfile.get(key, 0)) for key in vocabulary]
+# def getVectorList(vocabulary: dict, userProfile: dict) -> list:
+#     return [max(0, userProfile.get(key, 0)) for key in vocabulary]
 
 def l2_normalize(vector: list) -> list:
     magnitude = sum(x ** 2 for x in vector) ** 0.5
@@ -183,8 +183,48 @@ def l2_normalize(vector: list) -> list:
 def buildVectors(user):
     vocabulary = getEventVocabulary()
     userProfile = buildUserProfile(user)
-    vectorList = getVectorList(vocabulary, userProfile)
+    vectorList = [max(0, userProfile.get(key, 0)) for key in vocabulary]
     normalized = l2_normalize(vectorList)
-    print(normalized)
+    return normalized
 
-buildVectors("user-005")
+def getEventVector(seg: str, genre: str, userVector: list) -> list:
+    vocabulary = getEventVocabulary()
+    userGenres = set()
+    if seg:
+        userGenres.add(normalize_word(seg))
+    if genre:
+        userGenres.add(normalize_word(genre))
+
+    lst = []
+    for key in vocabulary:
+        if normalize_word(key) in userGenres:
+            lst.append(1)
+        else:
+            lst.append(0)
+    return lst
+
+def scoreEvent(event, user_vector, vocabulary):
+    score = 0
+    for tag in [event.get("genre"), event.get("segment")]:
+        if tag and tag in vocabulary:
+            score += user_vector[vocabulary[tag]]
+    return score
+
+
+def recommend(user, vocabulary):
+    events_scores = {}
+
+    userVector = buildVectors(user)
+
+    with open(EVENTS_FILE, "r") as f:
+        data = json.load(f)
+
+        for event in data["events"]:
+            score = scoreEvent(event, userVector, vocabulary)
+            events_scores[event["id"]] = score
+
+    sorted_items = sorted(events_scores.items(), key=lambda x: x[1], reverse=True)
+
+    return dict(sorted_items[:20])
+
+print(recommend("user-005", getEventVocabulary()))
