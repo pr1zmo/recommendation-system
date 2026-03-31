@@ -77,10 +77,18 @@ def recommend():
     if user is None:
         return randomRecommend()
 
-    pref = user["preferences"]
-    seg = (pref["segments"])
-    genres = (pref["genres"])
+    pref = user.get("preferences", {})
+    seg = pref.get("segments", [])
+    genres = pref.get("genres", [])
     tags = seg + genres
+    if not tags:
+        location = user.get("countryCode")
+        if location:
+            local = mapRecommend(location)
+            if local:
+                return local[:20]
+        return randomRecommend()
+
     return relativeTypes(tags)
     # with open('bruh.json', 'wb') as f:
     #     json.dump(relativeTypes(["Comedy", "Country"]), f)

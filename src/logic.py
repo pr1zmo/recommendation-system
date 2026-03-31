@@ -78,7 +78,8 @@ def getSegments(user, multiplier) -> dict:
         print(f"User {user} does not exist!\n")
         return {}
 
-    segments = userData["preferences"]["segments"]
+    preferences = userData.get("preferences", {})
+    segments = preferences.get("segments") or preferences.get("genres") or []
 
     seg = {}
     for value in segments:
@@ -96,7 +97,7 @@ def getEvents(user, multiplier, field: str, event_by_id=None) -> dict:
     if userData is None:
         return {}
     
-    likes = userData["history"].get(field, [])
+    likes = userData.get("history", {}).get(field, [])
 
     if event_by_id is None:
         event_by_id = _build_event_index(_load_events_data())
