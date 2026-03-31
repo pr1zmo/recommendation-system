@@ -1,7 +1,11 @@
 import json
 import random
-import os
+import argparse
+from pathlib import Path
 from datetime import date, timedelta
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_FILE = _PROJECT_ROOT / "generator" / "data.json"
 
 types = {
 	"1": "Conference",
@@ -314,7 +318,7 @@ def random_local_date(start_year=2026, end_year=2028):
 	"imageUrl": "https://s1.ticketm.net/dam/a/6e0/1b4c5954-6cfb-4e4a-bc0f-09abea7296e0_SOURCE"
 }
 '''
-def generate_events() -> list:
+def generate_event() -> dict:
 	r = random.sample(string, 14)
 	_id = "".join(r)
 	name = "placeholder event"
@@ -338,12 +342,46 @@ def generate_events() -> list:
 		"status": status,
 		"imageUrl": image_url,
 	}
-	with open("generator/data.json", "a+") as f:
-		json.dump(payload, f, indent=2)
-		f.write(",\n")
-	event = []
+	return payload
 
-	return event
 
-for _ in range(100):
-	generate_events()
+def _load_generated_events(path: Path = DATA_FILE) -> list:
+	if not path.exists():
+		return []
+
+	with open(path, "r") as f:
+		content = f.read().strip()
+		if not content:
+			return []
+
+	try:
+		data = json.loads(content)
+		if isinstance(data, list):
+			return data
+	except json.JSONDecodeError:
+		# Reset invalid/non-array content to keep the file machine-readable.
+		return []
+
+	return []
+
+
+def append_generated_events(count: int = 1, path: Path = DATA_FILE) -> list:
+	events = _load_generated_events(path)
+	events.extend(generate_event() for _ in range(count))
+
+	with open(path, "w") as f:
+		json.dump(events, f, indent=2)
+
+	return events
+
+
+def main():
+	parser = argparse.ArgumentParser(description="Generate placeholder events into generator/data.json")
+	parser.add_argument("-n", "--count", type=int, default=100, help="Number of events to generate")
+	args = parser.parse_args()
+
+	append_generated_events(count=max(args.count, 0))
+
+
+if __name__ == "__main__":
+	main()

@@ -1,13 +1,8 @@
 import json
-import math
 from pathlib import Path
-from sklearn.preprocessing import normalize
-from generator.generate import types, category, sub_category
+from generator.generate import types, sub_category
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-def similarity() -> float:
-    return .011245
 
 '''
 Recommendation formual:
@@ -45,7 +40,6 @@ DISLIKED_GENRE = -5
 EVENTS_FILE = str(_PROJECT_ROOT / "data" / "data3.json")
 USERS_FILE = str(_PROJECT_ROOT / "data" / "users.json")
 
-
 def _get_user_data(user):
     """Helper to load and find user by ID, reducing redundancy."""
     with open(USERS_FILE, "r") as usr:
@@ -58,12 +52,31 @@ def _get_user_data(user):
     return None
 
 
+def _load_events_data() -> list:
+    with open(EVENTS_FILE, "r") as events_file:
+        return json.load(events_file).get("events", [])
+
+
+def _build_event_index(events_data: list) -> dict:
+    event_by_id = {}
+    for event in events_data:
+        event_id = event.get("id")
+        if event_id:
+            event_by_id[event_id] = event
+    return event_by_id
+
+
+def _merge_weighted_profile(target: dict, source: dict) -> None:
+    for key, value in source.items():
+        target[key] = target.get(key, 0) + value
+
+
 def getSegments(user, multiplier) -> dict:
     userData = _get_user_data(user)
     
     if userData is None:
         print(f"User {user} does not exist!\n")
-        return None
+        return {}
 
     segments = userData["preferences"]["segments"]
 
@@ -77,24 +90,16 @@ def getSegments(user, multiplier) -> dict:
 
     return seg
 
-def getEvents(user, multiplier, field: str) -> dict:
+def getEvents(user, multiplier, field: str, event_by_id=None) -> dict:
     userData = _get_user_data(user)
     
     if userData is None:
-        return None
+        return {}
     
     likes = userData["history"].get(field, [])
-    
-    # Load events from data3.json
-    with open(EVENTS_FILE, "r") as events_file:
-        events_data = json.load(events_file)
-    
-    # Build a map of event_id -> event for fast lookup
-    event_by_id = {}
-    for event in events_data.get("events", []):
-        event_id = event.get("id")
-        if event_id:
-            event_by_id[event_id] = event
+
+    if event_by_id is None:
+        event_by_id = _build_event_index(_load_events_data())
     
     # Extract segment and genre from liked events
     profile = {}
@@ -121,25 +126,15 @@ def buildUserProfile(user) -> dict:
     You then normalize the weights:
     '''
     prof = {}
-    prof.update(getSegments(user, EXPLICIT))
-    prof.update(getEvents(user, LIKED, "likedEventIds"))
-    prof.update(getEvents(user, DISLIKED, "dislikedEventIds"))
-    prof.update(getEvents(user, ATTENDED, "attendedEventIds"))
+    events_data = _load_events_data()
+    event_by_id = _build_event_index(events_data)
+    _merge_weighted_profile(prof, getSegments(user, EXPLICIT))
+    _merge_weighted_profile(prof, getEvents(user, LIKED, "likedEventIds", event_by_id))
+    _merge_weighted_profile(prof, getEvents(user, DISLIKED, "dislikedEventIds", event_by_id))
+    _merge_weighted_profile(prof, getEvents(user, ATTENDED, "attendedEventIds", event_by_id))
 
     return prof
     # prof.append(getSegments(user, EXPLICIT))
-
-class Matrix:
-    pass
-
-def matrixMult(m1, m2):
-    pass
-
-def coldStart() -> list:
-    pass
-
-def userEventMatrix(users, events):
-    pass
 
 def normalize_word(item: str) -> str:
     res = ''.join([i for i in item if i.isalpha() or i.isspace() or i == '&'])
